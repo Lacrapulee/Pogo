@@ -37,7 +37,7 @@ class Board:
         # Note : La règle officielle dit "La hauteur des piles n'est pas limitée".
         # Donc on retire la vérification de taille > 3 ici.
         self.grille[i].extend(paquet)
-
+    
     def retire_paquet(self, i, nombre):
         """Retire `nombre` pions du sommet de la pile i."""
         if not 0 <= i < 9:
@@ -50,6 +50,13 @@ class Board:
         paquet = pile[-nombre:]
         del pile[-nombre:]
         return paquet
+    
+    def make_move(self, move):
+        """Effectue un coup donné sous la forme (start_index, num_pieces, dest_index)."""
+        start_idx, num_pieces, dest_idx = move
+        paquet = self.retire_paquet(start_idx, num_pieces)
+        self.place_paquet(dest_idx, paquet)
+
 
     def get_pile(self, i):
         return self.grille[i]
@@ -151,6 +158,12 @@ class Board:
             return 'B'
             
         return None
+    
+    def clone(self):
+        """Retourne une copie profonde du plateau."""
+        new_board = Board()
+        new_board.grille = [pile.copy() for pile in self.grille]
+        return new_board
 
     def display(self):
         print("\n=== PLATEAU ===")

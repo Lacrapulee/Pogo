@@ -1,5 +1,6 @@
 import sys
 from game.board import Board
+from ia.ai_player import AIPlayer
 
 # SI MODE IA : Décommenter les lignes suivantes quand la classe sera prête
 # from game.ai import AIPlayer
@@ -77,13 +78,39 @@ def play_ia():
     print("Pour l'activer, veuillez charger la classe IA dans le code.")
     
     # Structure prévue pour l'IA :
-    # board = Board()
-    # ai = AIPlayer()
+    board = Board()
+    ai = AIPlayer("B")  # L'IA joue les Noirs
+    current_player = 'W' # Humain commence
+
     # ... boucle de jeu similaire au solo ...
-    # if current_player == 'IA':
-    #      move = ai.get_best_move(board)
-    # else:
-    #      move = get_human_move(...)
+    while True:
+        board.display()
+        
+        winner = board.is_game_over()
+        if winner:
+            print(f"\nBRAVO ! Le joueur {winner} a gagné la partie !")
+            break
+        
+        if current_player == "W":
+            move = get_human_move(board, current_player)
+        
+            if move:
+                start, n, end = move
+                paquet = board.retire_paquet(start, n)
+                board.place_paquet(end, paquet)
+                print(f"> Joueur {current_player} déplace {n} pions de {start} vers {end}.")
+        else:
+            move = ai.get_best_move(board)
+            if move:
+                start, n, end = move
+                paquet = board.retire_paquet(start, n)
+                board.place_paquet(end, paquet)
+                print(f"> IA ({current_player}) déplace {n} pions de {start} vers {end}.")
+        
+        
+        # Changement de joueur
+        current_player = 'B' if current_player == 'W' else 'W'
+
 
 def main():
     while True:
