@@ -2,9 +2,6 @@ import sys
 from game.board import Board
 from ia.ai_player import AIPlayer
 
-# SI MODE IA : Décommenter les lignes suivantes quand la classe sera prête
-# from game.ai import AIPlayer
-
 def print_menu():
     print("\n" + "="*30)
     print("       JEU POGO")
@@ -12,6 +9,7 @@ def print_menu():
     print("1. Mode Solo (Humain vs Humain)")
     print("2. Mode IA (Humain vs Ordinateur)")
     print("3. Quitter")
+    print("4. Interface Graphique (GUI)")
     print("="*30)
 
 def get_human_move(board, current_player):
@@ -70,19 +68,17 @@ def play_solo():
             board.place_paquet(end, paquet)
             print(f"> Joueur {current_player} déplace {n} pions de {start} vers {end}.")
         
-        # Changement de joueur
+        # changement de joueur
         current_player = 'B' if current_player == 'W' else 'W'
 
 def play_ia():
     print("\n[INFO] Le mode IA n'est pas encore activé.")
     print("Pour l'activer, veuillez charger la classe IA dans le code.")
     
-    # Structure prévue pour l'IA :
     board = Board()
-    ai = AIPlayer("B")  # L'IA joue les Noirs
-    current_player = 'W' # Humain commence
+    ai = AIPlayer("B") 
+    current_player = 'W'
 
-    # ... boucle de jeu similaire au solo ...
     while True:
         board.display()
         
@@ -108,24 +104,19 @@ def play_ia():
                 print(f"> IA ({current_player}) déplace {n} pions de {start} vers {end}.")
         
         
-        # Changement de joueur
+        # changement de joueur
         current_player = 'B' if current_player == 'W' else 'W'
 
 
 def main():
-    while True:
-        print_menu()
-        choice = input("Votre choix : ")
-        
-        if choice == '1':
-            play_solo()
-        elif choice == '2':
-            play_ia()
-        elif choice == '3':
-            print("Au revoir !")
-            sys.exit()
-        else:
-            print("Choix invalide.")
+    try:
+        from ui.gui import launch_gui
+        launch_gui()
+    except Exception as e:
+        print(f"Erreur en lançant la GUI : {e}")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
