@@ -1,15 +1,14 @@
 import tkinter as tk
-from tkinter import simpledialog, messagebox, ttk
+from tkinter import messagebox, ttk
 from game.board import Board
 from ia.ai_player import AIPlayer
-import math
 import sys
 
 CELL_SIZE = 140
 PADDING = 18
 PIECE_RADIUS = 18
 STACK_GAP = 6
-ANIM_STEPS_BASE = 14 
+ANIM_STEPS_BASE = 14
 MIN_PIECE_RADIUS = 6
 MIN_GAP = 2
 MIN_SCALE_THRESHOLD = 0.6
@@ -19,33 +18,67 @@ class StartupScreen:
     def __init__(self, master):
         self.master = master
         self.frame = ttk.Frame(master, padding=16)
-        # ecran de demarrage correspond à l'interface du jeu
         try:
             master.rowconfigure(0, weight=1)
             master.columnconfigure(0, weight=1)
         except Exception:
             pass
-        self.frame.grid(row=0, column=0, sticky='nsew')
+        self.frame.grid(row=0, column=0, sticky="nsew")
 
-        # les modes de jeu
-        ttk.Label(self.frame, text="POGO", font=(None, 20, 'bold')).pack(pady=(8,6))
-        ttk.Label(self.frame, text="Choisissez un mode de jeu", font=(None, 11)).pack(pady=(0,12))
+        ttk.Label(self.frame, text="POGO", font=(None, 20, "bold")).pack(pady=(8, 6))
+        ttk.Label(self.frame, text="Choisissez un mode de jeu", font=(None, 11)).pack(pady=(0, 12))
 
         btns = ttk.Frame(self.frame)
         btns.pack(pady=6)
 
         try:
             style = ttk.Style()
-            style.configure('Mode.TButton', font=(None, 12, 'bold'), padding=8)
+            style.configure("Mode.TButton", font=(None, 12, "bold"), padding=8)
         except Exception:
             pass
-        ttk.Button(btns, text="Solo (Humain vs Humain)", command=lambda: self.start('solo'), width=36, style='Mode.TButton').pack(pady=8)
-        ttk.Button(btns, text="IA (Humain vs Ordinateur)", command=lambda: self.start('ia'), width=36, style='Mode.TButton').pack(pady=8)
-        ttk.Button(btns, text="Quitter", command=self.quit, width=20, style='Mode.TButton').pack(pady=(10,4))
 
-        ttk.Label(self.frame, text="Vous pouvez changer le mode plus tard via la barre d'outils.", font=(None, 9), foreground='#555').pack(pady=(6,2))
+        ttk.Button(
+            btns,
+            text="Solo (Humain vs Humain)",
+            command=lambda: self.start("solo"),
+            width=36,
+            style="Mode.TButton",
+        ).pack(pady=8)
 
-    def start(self, mode):
+        ttk.Button(
+            btns,
+            text="IA (Humain vs IA) – Humain joue Blanc",
+            command=lambda: self.start("h_vs_ai", human_color="W"),
+            width=36,
+            style="Mode.TButton",
+        ).pack(pady=8)
+
+        ttk.Button(
+            btns,
+            text="IA (Humain vs IA) – Humain joue Noir",
+            command=lambda: self.start("h_vs_ai", human_color="B"),
+            width=36,
+            style="Mode.TButton",
+        ).pack(pady=8)
+
+        ttk.Button(
+            btns,
+            text="IA vs IA (Ordinateur vs Ordinateur)",
+            command=lambda: self.start("ai_vs_ai"),
+            width=36,
+            style="Mode.TButton",
+        ).pack(pady=8)
+
+        ttk.Button(btns, text="Quitter", command=self.quit, width=20, style="Mode.TButton").pack(pady=(10, 4))
+
+        ttk.Label(
+            self.frame,
+            text="Vous pouvez changer le mode plus tard via la barre d'outils.",
+            font=(None, 9),
+            foreground="#555",
+        ).pack(pady=(6, 2))
+
+    def start(self, mode, human_color=None):
         self.frame.destroy()
         self.master.update_idletasks()
         w = self.master.winfo_width()
@@ -53,10 +86,9 @@ class StartupScreen:
         x = (self.master.winfo_screenwidth() - w) // 2
         y = (self.master.winfo_screenheight() - h) // 2
         self.master.geometry(f"+{x}+{y}")
-        PogoGUI(self.master, mode=mode)
+        PogoGUI(self.master, mode=mode, human_color=human_color)
 
     def quit(self):
-        # quitter proprement le jeu
         try:
             self.master.destroy()
         finally:
@@ -66,23 +98,21 @@ class StartupScreen:
 def launch_gui():
     root = tk.Tk()
     root.title("POGO - Interface Graphique")
-    # centrer et définir une taille minimale de fenêtre
     window_w = CELL_SIZE * 3 + PADDING * 2 + 40
     window_h = window_w + 120
     root.minsize(window_w, window_h)
     try:
         style = ttk.Style()
-        style.theme_use('clam')
+        style.theme_use("clam")
     except Exception:
         pass
 
-    # démarrer en plein écran par défaut
     try:
-        root.attributes('-fullscreen', True)
-        root.bind('<Escape>', lambda e: root.attributes('-fullscreen', False))
+        root.attributes("-fullscreen", True)
+        root.bind("<Escape>", lambda e: root.attributes("-fullscreen", False))
     except Exception:
         try:
-            root.state('zoomed')
+            root.state("zoomed")
         except Exception:
             screen_w = root.winfo_screenwidth()
             screen_h = root.winfo_screenheight()
@@ -90,12 +120,10 @@ def launch_gui():
             h = min(screen_h - 80, max(window_h, int(screen_h * 0.75)))
             root.geometry(f"{w}x{h}")
 
-    # afficher l'écran de démarrage dans la fenêtre principale
     StartupScreen(root)
 
-    # centrer la fenêtre à l'écran et lancer la boucle principale (si pas en plein écran)
     root.update_idletasks()
-    if not getattr(root, 'attributes', lambda *a, **k: False)('-fullscreen'):
+    if not getattr(root, "attributes", lambda *a, **k: False)("-fullscreen"):
         screen_w = root.winfo_screenwidth()
         screen_h = root.winfo_screenheight()
         x = (screen_w - root.winfo_width()) // 2
@@ -105,28 +133,36 @@ def launch_gui():
 
 
 class PogoGUI:
-    def __init__(self, master, mode='solo'):
+    def __init__(self, master, mode="solo", human_color="W"):
         self.master = master
         self.board = Board()
-        self.current_player = 'W'
+        self.current_player = "W"
         self.history = []
 
-        # modes de jeu : solo ou ia
         self.mode = mode
-        self.ai = None
-        if self.mode == 'ia':
-            self.ai = AIPlayer('B')
+        self.human_color = human_color if human_color in ("W", "B") else "W"
 
-        # état
-        self.selected = None  # (start_idx, n_pieces)
+        self.ai_white = None
+        self.ai_black = None
+
+        if self.mode == "h_vs_ai":
+            ai_color = "B" if self.human_color == "W" else "W"
+            if ai_color == "W":
+                self.ai_white = AIPlayer("W")
+            else:
+                self.ai_black = AIPlayer("B")
+        elif self.mode == "ai_vs_ai":
+            self.ai_white = AIPlayer("W")
+            self.ai_black = AIPlayer("B")
+
+        self.selected = None
         self.highlighted = []
         self.hover = None
         self.animating = False
 
-        # permet de détruire l'ui du jeu
         self._closing = False
         self.root_frame = ttk.Frame(self.master)
-        self.root_frame.grid(row=0, column=0, sticky='nsew')
+        self.root_frame.grid(row=0, column=0, sticky="nsew")
         try:
             self.master.rowconfigure(0, weight=1)
             self.master.columnconfigure(0, weight=1)
@@ -146,10 +182,10 @@ class PogoGUI:
                 self.root_frame.columnconfigure(i, weight=1)
             except Exception:
                 pass
-        self.root_frame.bind('<Configure>', lambda e: self._on_resize())
+        self.root_frame.bind("<Configure>", lambda e: self._on_resize())
 
         self.canvas_container = ttk.Frame(self.root_frame)
-        self.canvas_container.grid(row=0, column=0, columnspan=4, sticky='nsew')
+        self.canvas_container.grid(row=0, column=0, columnspan=4, sticky="nsew")
         try:
             self.canvas_container.columnconfigure(0, weight=0)
             self.canvas_container.columnconfigure(1, weight=1)
@@ -160,7 +196,7 @@ class PogoGUI:
 
         canvas_size = self.CELL_SIZE * 3 + self.PADDING * 2
         self.canvas = tk.Canvas(self.canvas_container, width=canvas_size, height=canvas_size, bg="#f6f7fb", highlightthickness=0)
-        self.canvas.grid(row=0, column=1, sticky='nsew', padx=6, pady=(6, 4))
+        self.canvas.grid(row=0, column=1, sticky="nsew", padx=6, pady=(6, 4))
         try:
             self.canvas_container.columnconfigure(1, weight=1)
             self.canvas_container.rowconfigure(0, weight=1)
@@ -168,65 +204,75 @@ class PogoGUI:
             pass
         self.root_frame.update_idletasks()
         try:
-            self.canvas.config(width=min(self.root_frame.winfo_width()-40, canvas_size), height=max(240, self.root_frame.winfo_height()-200))
+            self.canvas.config(width=min(self.root_frame.winfo_width() - 40, canvas_size), height=max(240, self.root_frame.winfo_height() - 200))
         except Exception:
             pass
         self.canvas.bind("<Button-1>", self.on_canvas_click)
         self.canvas.bind("<Motion>", self.on_mouse_move)
         self.canvas.bind("<Leave>", lambda e: self._set_hover(None))
+
         self.toolbar = ttk.Frame(self.root_frame)
-        self.toolbar.grid(row=1, column=0, columnspan=4, sticky='we', padx=8, pady=(0,8))
+        self.toolbar.grid(row=1, column=0, columnspan=4, sticky="we", padx=8, pady=(0, 8))
         self.toolbar_inner = ttk.Frame(self.toolbar)
-        self.toolbar_inner.pack(anchor='center')
+        self.toolbar_inner.pack(anchor="center")
 
         self.new_button = ttk.Button(self.toolbar_inner, text="Nouvelle partie", command=self._confirm_new)
         self.new_button.grid(row=0, column=0, padx=6)
         self.undo_button = ttk.Button(self.toolbar_inner, text="Annuler (u)", command=self.undo)
         self.undo_button.grid(row=0, column=1, padx=6)
-        self.undo_button.state(['disabled'])
+        self.undo_button.state(["disabled"])
         self.help_button = ttk.Button(self.toolbar_inner, text="Aide", command=self.show_help)
         self.help_button.grid(row=0, column=2, padx=6)
-        # affichage du mode
-        self.mode_label = ttk.Label(self.toolbar_inner, text=("Mode: IA (IA joue Noir)" if self.mode == 'ia' else "Mode: Solo"), font=(None, 11, 'bold'))
+
+        if self.mode == "solo":
+            mode_txt = "Mode: Solo"
+        elif self.mode == "h_vs_ai":
+            mode_txt = f"Mode: Humain vs IA (Humain = {'Blanc' if self.human_color=='W' else 'Noir'})"
+        else:
+            mode_txt = "Mode: IA vs IA"
+        self.mode_label = ttk.Label(self.toolbar_inner, text=mode_txt, font=(None, 11, "bold"))
         self.mode_label.grid(row=0, column=3, padx=12, pady=2)
+
         try:
-            self.turn_canvas = tk.Canvas(self.toolbar_inner, width=18, height=18, highlightthickness=0, bg='')
-            self.turn_dot = self.turn_canvas.create_oval(2,2,16,16, fill='#ffffff', outline='#9aa0a6')
-            self.turn_canvas.grid(row=0, column=4, padx=(6,8), pady=2)
+            self.turn_canvas = tk.Canvas(self.toolbar_inner, width=18, height=18, highlightthickness=0, bg="")
+            self.turn_dot = self.turn_canvas.create_oval(2, 2, 16, 16, fill="#ffffff", outline="#9aa0a6")
+            self.turn_canvas.grid(row=0, column=4, padx=(6, 8), pady=2)
         except Exception:
             self.turn_canvas = None
             self.turn_dot = None
+
         self.speed_label = ttk.Label(self.toolbar_inner, text="Vitesse")
-        self.speed_label.grid(row=0, column=5, padx=(12,2))
-        self.speed_scale = ttk.Scale(self.toolbar_inner, from_=0.4, to=2.0, value=1.0, orient='horizontal')
+        self.speed_label.grid(row=0, column=5, padx=(12, 2))
+        self.speed_scale = ttk.Scale(self.toolbar_inner, from_=0.4, to=2.0, value=1.0, orient="horizontal")
         self.speed_scale.grid(row=0, column=6, padx=6)
         self.quit_button = ttk.Button(self.toolbar_inner, text="Retour menu", command=self._to_startup)
-        self.quit_button.grid(row=0, column=7, padx=(6,0))
+        self.quit_button.grid(row=0, column=7, padx=(6, 0))
 
-        # variable de statut (conservée pour l'indicateur de tour)
         self.status_var = tk.StringVar(value=f"Joueur : {'Blanc (W)' if self.current_player == 'W' else 'Noir (B)'}")
 
         self.instruction_var = tk.StringVar(value="Astuce : Cliquez sur une pile pour commencer. Sélectionnez le nombre de pièces puis cliquez sur une case verte pour déplacer.")
-        self.instr_widget = ttk.Label(self.root_frame, textvariable=self.instruction_var, anchor='center', justify='center', foreground='#333')
-        self.instr_widget.grid(row=4, column=0, columnspan=4, sticky='we', padx=8, pady=(0,12))
-        
+        self.instr_widget = ttk.Label(self.root_frame, textvariable=self.instruction_var, anchor="center", justify="center", foreground="#333")
+        self.instr_widget.grid(row=4, column=0, columnspan=4, sticky="we", padx=8, pady=(0, 12))
+
         self.palette = {
-            'bg': '#f6f7fb',
-            'cell': '#ffffff',
-            'cell_border': '#c6c9d6',
-            'cell_shadow': '#dfe3ee',
-            'highlight': '#60c66b',
-            'selected': '#4d89ff'
+            "bg": "#f6f7fb",
+            "cell": "#ffffff",
+            "cell_border": "#c6c9d6",
+            "cell_shadow": "#dfe3ee",
+            "highlight": "#60c66b",
+            "selected": "#4d89ff",
         }
 
-        master.bind('<u>', lambda e: self.undo())
-        master.bind('<Control-n>', lambda e: self._confirm_new())
+        master.bind("<u>", lambda e: self.undo())
+        master.bind("<Control-n>", lambda e: self._confirm_new())
 
         self.draw_board()
         try:
             self._update_turn_dot()
         except Exception:
             pass
+
+        self.master.after(200, self._maybe_ai_turn)
 
     def cell_bbox(self, idx):
         r, c = divmod(idx, 3)
@@ -255,14 +301,14 @@ class PogoGUI:
 
     def _update_turn_dot(self):
         try:
-            if not getattr(self, 'turn_canvas', None) or self.turn_dot is None:
+            if not getattr(self, "turn_canvas", None) or self.turn_dot is None:
                 return
-            if self.current_player == 'W':
-                fill = '#ffffff'
-                outline = '#9aa0a6'
+            if self.current_player == "W":
+                fill = "#ffffff"
+                outline = "#9aa0a6"
             else:
-                fill = '#111111'
-                outline = '#d6d6d6'
+                fill = "#111111"
+                outline = "#d6d6d6"
             self.turn_canvas.itemconfig(self.turn_dot, fill=fill, outline=outline)
         except Exception:
             pass
@@ -278,8 +324,7 @@ class PogoGUI:
             return
         self.hover = idx
         try:
-            # changer le curseur pour indiquer que c'est cliquable
-            self.canvas.configure(cursor='hand2' if idx is not None else '')
+            self.canvas.configure(cursor="hand2" if idx is not None else "")
         except Exception:
             pass
         self.draw_board()
@@ -289,9 +334,9 @@ class PogoGUI:
 
     def _update_undo_state(self):
         if self.history:
-            self.undo_button.state(['!disabled'])
+            self.undo_button.state(["!disabled"])
         else:
-            self.undo_button.state(['disabled'])
+            self.undo_button.state(["disabled"])
 
     def _on_resize(self):
         try:
@@ -306,23 +351,22 @@ class PogoGUI:
             th = 0
             sh = 0
             ih = 0
-            if getattr(self, 'toolbar', None):
+            if getattr(self, "toolbar", None):
                 try:
                     th = max(self.toolbar.winfo_reqheight(), self.toolbar.winfo_height())
                 except Exception:
                     th = self.toolbar.winfo_height() if self.toolbar.winfo_height() else 0
-            if getattr(self, 'status_bar_widget', None):
+            if getattr(self, "status_bar_widget", None):
                 try:
                     sh = max(self.status_bar_widget.winfo_reqheight(), self.status_bar_widget.winfo_height())
                 except Exception:
                     sh = self.status_bar_widget.winfo_height() if self.status_bar_widget.winfo_height() else 0
-            if getattr(self, 'instr_widget', None):
+            if getattr(self, "instr_widget", None):
                 try:
                     ih = max(self.instr_widget.winfo_reqheight(), self.instr_widget.winfo_height())
                 except Exception:
                     ih = self.instr_widget.winfo_height() if self.instr_widget.winfo_height() else 0
 
-            # calculer l'espace disponible pour le canvas
             extra_margin = max(8, int(self.CELL_SIZE * 0.04))
             avail_h = frame_h - th - sh - ih - extra_margin
             avail_w = frame_w - 2 * self.PADDING - extra_margin
@@ -332,7 +376,6 @@ class PogoGUI:
             if avail_w < 120:
                 avail_w = 120
 
-            # définir la taille du canvas pour remplir l'espace
             try:
                 self.canvas.config(width=avail_w, height=avail_h)
             except Exception:
@@ -367,15 +410,15 @@ class PogoGUI:
         if self.animating:
             return
         self.board.setup_board()
-        self.current_player = 'W'
+        self.current_player = "W"
         self.history.clear()
         self.selected = None
         self.highlighted = []
-        # mettre à jour l'indicateur de tour visible
         self.status_var.set(f"Joueur : {'Blanc (W)' if self.current_player == 'W' else 'Noir (B)'}")
         self._update_turn_dot()
         self._update_undo_state()
         self.draw_board()
+        self.master.after(200, self._maybe_ai_turn)
 
     def _to_startup(self):
         if self.animating:
@@ -398,12 +441,13 @@ class PogoGUI:
         self.board = self.history.pop()
         self.selected = None
         self.highlighted = []
-        self.current_player = 'B' if self.current_player == 'W' else 'W'
+        self.current_player = "B" if self.current_player == "W" else "W"
         self.status_var.set(f"Joueur : {'Blanc (W)' if self.current_player == 'W' else 'Noir (B)'}")
         self._update_turn_dot()
         self._update_undo_state()
         self.instruction_var.set("Annulation effectuée.")
         self.draw_board()
+        self.master.after(200, self._maybe_ai_turn)
 
     def ask_piece_count(self, idx, max_move):
         win = tk.Toplevel(self.master)
@@ -413,7 +457,7 @@ class PogoGUI:
         x = int(self.master.winfo_rootx() + cx - 60)
         y = int(self.master.winfo_rooty() + cy - 30)
         win.geometry(f"+{x}+{y}")
-        choice = {'n': None}
+        choice = {"n": None}
 
         frm = ttk.Frame(win, padding=8)
         frm.pack()
@@ -421,27 +465,27 @@ class PogoGUI:
         btns = ttk.Frame(frm)
         btns.pack(pady=6)
         for i in range(1, max_move + 1):
-            b = ttk.Button(btns, text=str(i), command=lambda v=i: (choice.__setitem__('n', v), win.destroy()))
-            b.pack(side='left', padx=4)
-        ttk.Button(frm, text="Annuler", command=win.destroy).pack(pady=(6,0))
+            b = ttk.Button(btns, text=str(i), command=lambda v=i: (choice.__setitem__("n", v), win.destroy()))
+            b.pack(side="left", padx=4)
+        ttk.Button(frm, text="Annuler", command=win.destroy).pack(pady=(6, 0))
         win.grab_set()
         self.master.wait_window(win)
-        return choice['n']
+        return choice["n"]
 
     def show_help(self):
-        # aide pour comprendre les règles du jeu
-        msg = ("But : Contrôler le sommet des piles (avoir au moins une de vos couleurs visible au sommet des cases).\n\n"
-               "A votre tour :\n"
-               "- Cliquez sur une pile dont la couleur au sommet est la vôtre.\n"
-               "- Choisissez le nombre de pièces à déplacer (1 à 3, selon la hauteur).\n"
-               "- Cliquez sur une case mise en surbrillance (verte) : la distance doit être exactement le nombre de pièces déplacées (déplacements orthogonaux uniquement).\n\n"
-               "Règles supplémentaires :\n"
-               "- Pas de demi-tour immédiat dans un même mouvement (pas de 180°).\n"
-               "- Le joueur qui couvre toutes les piles adverses gagne.\n\n"
-               "Astuce : les points verts au centre des cases indiquent les destinations possibles ; un message-guide s'affiche en bas.")
+        msg = (
+            "But : Contrôler le sommet des piles (avoir au moins une de vos couleurs visible au sommet des cases).\n\n"
+            "A votre tour :\n"
+            "- Cliquez sur une pile dont la couleur au sommet est la vôtre.\n"
+            "- Choisissez le nombre de pièces à déplacer (1 à 3, selon la hauteur).\n"
+            "- Cliquez sur une case mise en surbrillance (verte) : la distance doit être exactement le nombre de pièces déplacées (déplacements orthogonaux uniquement).\n\n"
+            "Règles supplémentaires :\n"
+            "- Pas de demi-tour immédiat dans un même mouvement (pas de 180°).\n"
+            "- Le joueur qui couvre toutes les piles adverses gagne.\n\n"
+            "Astuce : les points verts au centre des cases indiquent les destinations possibles ; un message-guide s'affiche en bas."
+        )
         messagebox.showinfo("Aide - Règles du jeu", msg)
 
-    # tout ce qui est dessin du plateau et des pièces
     def draw_board(self):
         self.canvas.delete("all")
         offset = max(4, int(self.CELL_SIZE * 0.04))
@@ -458,27 +502,27 @@ class PogoGUI:
         sy = self._board_origin_y + self.PADDING
         cell_radius = max(10, int(self.CELL_SIZE * 0.06))
         try:
-            self._create_rounded_rect(sx - offset, sy - offset, sx + 3 * self.CELL_SIZE + offset, sy + 3 * self.CELL_SIZE + offset, radius=cell_radius, fill=self.palette['cell_shadow'], outline='')
+            self._create_rounded_rect(sx - offset, sy - offset, sx + 3 * self.CELL_SIZE + offset, sy + 3 * self.CELL_SIZE + offset, radius=cell_radius, fill=self.palette["cell_shadow"], outline="")
         except Exception:
-            self.canvas.create_rectangle(sx - offset, sy - offset, sx + 3 * self.CELL_SIZE + offset, sy + 3 * self.CELL_SIZE + offset, fill=self.palette['cell_shadow'], outline='')
+            self.canvas.create_rectangle(sx - offset, sy - offset, sx + 3 * self.CELL_SIZE + offset, sy + 3 * self.CELL_SIZE + offset, fill=self.palette["cell_shadow"], outline="")
 
         for r in range(3):
             for c in range(3):
                 idx = r * 3 + c
                 x0, y0, x1, y1 = self.cell_bbox(idx)
-                self._create_rounded_rect(x0, y0, x1, y1, radius=max(8, int(self.CELL_SIZE * 0.06)), fill=self.palette['cell'], outline=self.palette['cell_border'], width=max(1, int(self.CELL_SIZE*0.015)), tags=(f'cell{idx}',))
-                self.canvas.create_text(x0 + 8, y0 + 8, anchor='nw', text=str(idx), fill='#b0b6c8', font=(None, max(8, int(self.CELL_SIZE * 0.04))))
+                self._create_rounded_rect(x0, y0, x1, y1, radius=max(8, int(self.CELL_SIZE * 0.06)), fill=self.palette["cell"], outline=self.palette["cell_border"], width=max(1, int(self.CELL_SIZE * 0.015)), tags=(f"cell{idx}",))
+                self.canvas.create_text(x0 + 8, y0 + 8, anchor="nw", text=str(idx), fill="#b0b6c8", font=(None, max(8, int(self.CELL_SIZE * 0.04))))
 
                 if self.hover == idx and not self.selected:
                     pad = max(3, int(self.CELL_SIZE * 0.02))
                     try:
-                        self._create_rounded_rect(x0+pad, y0+pad, x1-pad, y1-pad, radius=max(6, int(self.CELL_SIZE*0.04)), fill='#f1fbf6', outline='#b0b6c8', width=max(1, int(self.CELL_SIZE*0.01)))
+                        self._create_rounded_rect(x0 + pad, y0 + pad, x1 - pad, y1 - pad, radius=max(6, int(self.CELL_SIZE * 0.04)), fill="#f1fbf6", outline="#b0b6c8", width=max(1, int(self.CELL_SIZE * 0.01)))
                     except Exception:
-                        self.canvas.create_rectangle(x0+pad, y0+pad, x1-pad, y1-pad, outline='#b0b6c8', width=2)
+                        self.canvas.create_rectangle(x0 + pad, y0 + pad, x1 - pad, y1 - pad, outline="#b0b6c8", width=2)
 
                 if self.selected and self.selected[0] == idx:
                     pad2 = max(4, int(self.CELL_SIZE * 0.03))
-                    self.canvas.create_rectangle(x0+pad2, y0+pad2, x1-pad2, y1-pad2, outline=self.palette['selected'], width=4)
+                    self.canvas.create_rectangle(x0 + pad2, y0 + pad2, x1 - pad2, y1 - pad2, outline=self.palette["selected"], width=4)
 
                 pile = self.board.get_pile(idx)
                 cx = (x0 + x1) / 2
@@ -487,51 +531,50 @@ class PogoGUI:
                 if visible >= total_n:
                     for i, piece in enumerate(pile):
                         y = self._final_y_for_index(idx, i, total_n, radius, gap)
-                        if piece == 'W':
-                            fill = '#ffffff'
-                            outline = '#9aa0a6'
+                        if piece == "W":
+                            fill = "#ffffff"
+                            outline = "#9aa0a6"
                         else:
-                            fill = '#111111'
-                            outline = '#d6d6d6'
-                        self.canvas.create_oval(cx - radius, y - radius, cx + radius, y + radius, fill=fill, outline=outline, width=max(1, int(radius*0.12)))
+                            fill = "#111111"
+                            outline = "#d6d6d6"
+                        self.canvas.create_oval(cx - radius, y - radius, cx + radius, y + radius, fill=fill, outline=outline, width=max(1, int(radius * 0.12)))
                 else:
                     start = total_n - visible
                     for pile_i in range(start, total_n):
                         piece = pile[pile_i]
                         y = self._final_y_for_index(idx, pile_i, total_n, radius, gap)
-                        if piece == 'W':
-                            fill = '#ffffff'
-                            outline = '#9aa0a6'
+                        if piece == "W":
+                            fill = "#ffffff"
+                            outline = "#9aa0a6"
                         else:
-                            fill = '#111111'
-                            outline = '#d6d6d6'
-                        self.canvas.create_oval(cx - radius, y - radius, cx + radius, y + radius, fill=fill, outline=outline, width=max(1, int(radius*0.12)))
+                            fill = "#111111"
+                            outline = "#d6d6d6"
+                        self.canvas.create_oval(cx - radius, y - radius, cx + radius, y + radius, fill=fill, outline=outline, width=max(1, int(radius * 0.12)))
                     hidden = total_n - visible
-                    badge_x = x0 + max(12, int(self.CELL_SIZE*0.08))
-                    badge_y = y1 - max(18, int(self.CELL_SIZE*0.12))
-                    self.canvas.create_rectangle(badge_x-8, badge_y-12, badge_x+30, badge_y+12, fill='#333', outline='')
-                    self.canvas.create_text(badge_x+11, badge_y, text=f"+{hidden}", fill='white', font=(None, max(10, int(self.CELL_SIZE*0.06)), 'bold'))
+                    badge_x = x0 + max(12, int(self.CELL_SIZE * 0.08))
+                    badge_y = y1 - max(18, int(self.CELL_SIZE * 0.12))
+                    self.canvas.create_rectangle(badge_x - 8, badge_y - 12, badge_x + 30, badge_y + 12, fill="#333", outline="")
+                    self.canvas.create_text(badge_x + 11, badge_y, text=f"+{hidden}", fill="white", font=(None, max(10, int(self.CELL_SIZE * 0.06)), "bold"))
 
                 if idx in self.highlighted:
-                    pad3 = max(6, int(self.CELL_SIZE*0.04))
-                    self.canvas.create_rectangle(x0+pad3, y0+pad3, x1-pad3, y1-pad3, outline=self.palette['highlight'], width=max(2, int(self.CELL_SIZE*0.02)))
+                    pad3 = max(6, int(self.CELL_SIZE * 0.04))
+                    self.canvas.create_rectangle(x0 + pad3, y0 + pad3, x1 - pad3, y1 - pad3, outline=self.palette["highlight"], width=max(2, int(self.CELL_SIZE * 0.02)))
                     mx, my = cx, (y0 + y1) / 2
                     try:
-                        self.canvas.create_oval(mx-int(self.CELL_SIZE*0.07), my-int(self.CELL_SIZE*0.07), mx+int(self.CELL_SIZE*0.07), my+int(self.CELL_SIZE*0.07), fill=self.palette['highlight'], outline='', stipple='gray25')
+                        self.canvas.create_oval(mx - int(self.CELL_SIZE * 0.07), my - int(self.CELL_SIZE * 0.07), mx + int(self.CELL_SIZE * 0.07), my + int(self.CELL_SIZE * 0.07), fill=self.palette["highlight"], outline="", stipple="gray25")
                     except Exception:
-                        self.canvas.create_oval(mx-int(self.CELL_SIZE*0.07), my-int(self.CELL_SIZE*0.07), mx+int(self.CELL_SIZE*0.07), my+int(self.CELL_SIZE*0.07), fill=self.palette['highlight'], outline='')
-                    self.canvas.create_text(mx, my, text=str(idx), fill='white', font=(None, max(10, int(self.CELL_SIZE*0.06)), 'bold'))
+                        self.canvas.create_oval(mx - int(self.CELL_SIZE * 0.07), my - int(self.CELL_SIZE * 0.07), mx + int(self.CELL_SIZE * 0.07), my + int(self.CELL_SIZE * 0.07), fill=self.palette["highlight"], outline="")
+                    self.canvas.create_text(mx, my, text=str(idx), fill="white", font=(None, max(10, int(self.CELL_SIZE * 0.06)), "bold"))
 
-        self.canvas.create_text(PADDING + 8, CELL_SIZE * 3 + PADDING - 6, anchor='sw', text=self.status_var.get(), fill='#222')
+        self.canvas.create_text(PADDING + 8, CELL_SIZE * 3 + PADDING - 6, anchor="sw", text=self.status_var.get(), fill="#222")
 
     def _create_rounded_rect(self, x1, y1, x2, y2, radius=8, **kwargs):
-        points = [ (x1+radius, y1), (x2-radius, y1), (x2, y1+radius), (x2, y2-radius), (x2-radius, y2), (x1+radius, y2), (x1, y2-radius), (x1, y1+radius) ]
-        self.canvas.create_rectangle(x1+radius, y1, x2-radius, y2, **kwargs)
-        self.canvas.create_rectangle(x1, y1+radius, x2, y2-radius, **kwargs)
-        self.canvas.create_arc(x2-2*radius, y1, x2, y1+2*radius, start=0, extent=90, style='pieslice', **kwargs)
-        self.canvas.create_arc(x2-2*radius, y2-2*radius, x2, y2, start=270, extent=90, style='pieslice', **kwargs)
-        self.canvas.create_arc(x1, y2-2*radius, x1+2*radius, y2, start=180, extent=90, style='pieslice', **kwargs)
-        self.canvas.create_arc(x1, y1, x1+2*radius, y1+2*radius, start=90, extent=90, style='pieslice', **kwargs)
+        self.canvas.create_rectangle(x1 + radius, y1, x2 - radius, y2, **kwargs)
+        self.canvas.create_rectangle(x1, y1 + radius, x2, y2 - radius, **kwargs)
+        self.canvas.create_arc(x2 - 2 * radius, y1, x2, y1 + 2 * radius, start=0, extent=90, style="pieslice", **kwargs)
+        self.canvas.create_arc(x2 - 2 * radius, y2 - 2 * radius, x2, y2, start=270, extent=90, style="pieslice", **kwargs)
+        self.canvas.create_arc(x1, y2 - 2 * radius, x1 + 2 * radius, y2, start=180, extent=90, style="pieslice", **kwargs)
+        self.canvas.create_arc(x1, y1, x1 + 2 * radius, y1 + 2 * radius, start=90, extent=90, style="pieslice", **kwargs)
 
     def _stack_metrics(self, idx, total_n):
         x0, y0, x1, y1 = self.cell_bbox(idx)
@@ -565,10 +608,15 @@ class PogoGUI:
     def on_canvas_click(self, event):
         if self.animating:
             return
+        if self.mode == "ai_vs_ai":
+            return
+        if self.mode == "h_vs_ai" and self.current_player != self.human_color:
+            return
+
         idx = self.idx_from_coords(event.x, event.y)
         if idx is None:
             try:
-                mark = self.canvas.create_oval(event.x-6, event.y-6, event.x+6, event.y+6, outline='#d9534f', width=2)
+                mark = self.canvas.create_oval(event.x - 6, event.y - 6, event.x + 6, event.y + 6, outline="#d9534f", width=2)
                 self.master.after(500, lambda m=mark: self.canvas.delete(m))
             except Exception:
                 pass
@@ -638,39 +686,33 @@ class PogoGUI:
 
         start_len = len(orig_pile)
         radius_for_anim, gap_for_anim, _ = self._stack_metrics(start_idx, start_len)
-        cell_half = self.CELL_SIZE / 2
 
         moving_items = []
         for i in range(n):
             piece_idx = start_len - n + i
             y = self._final_y_for_index(start_idx, piece_idx, start_len, radius_for_anim, gap_for_anim)
             x = start_cx
-            color = '#ffffff' if paquet[i] == 'W' else '#111111'
-            outline = '#9aa0a6' if paquet[i] == 'W' else '#d6d6d6'
-            item = self.canvas.create_oval(x - radius_for_anim, y - radius_for_anim, x + radius_for_anim, y + radius_for_anim, fill=color, outline=outline, width=max(1, int(radius_for_anim*0.12)))
-            moving_items.append((item, color))
+            color = "#ffffff" if paquet[i] == "W" else "#111111"
+            outline = "#9aa0a6" if paquet[i] == "W" else "#d6d6d6"
+            item = self.canvas.create_oval(x - radius_for_anim, y - radius_for_anim, x + radius_for_anim, y + radius_for_anim, fill=color, outline=outline, width=max(1, int(radius_for_anim * 0.12)))
+            moving_items.append(item)
 
         dest_len = len(self.board.get_pile(dest_idx))
         target_positions = []
         total_after = dest_len + n
-        dest_radius, dest_gap, dest_visible = self._stack_metrics(dest_idx, total_after)
+        dest_radius, dest_gap, _ = self._stack_metrics(dest_idx, total_after)
         for i in range(n):
             piece_final_index = dest_len + (n - 1 - i)
             final_y = self._final_y_for_index(dest_idx, piece_final_index, total_after, dest_radius, dest_gap)
             final_x = dest_cx
             target_positions.append((final_x, final_y))
-        if dest_radius != radius_for_anim:
-            adjusted = []
-            for fx, fy in target_positions:
-                adjusted.append((fx, fy))
-            target_positions = adjusted
 
         speed = float(self.speed_scale.get())
         steps = max(6, int(ANIM_STEPS_BASE / speed))
 
         def step(frame=0):
-            if getattr(self, '_closing', False):
-                for item, _ in moving_items:
+            if getattr(self, "_closing", False):
+                for item in moving_items:
                     try:
                         self.canvas.delete(item)
                     except Exception:
@@ -684,7 +726,7 @@ class PogoGUI:
             if frame >= steps:
                 self.board.place_paquet(dest_idx, paquet)
                 self.animating = False
-                self.current_player = 'B' if self.current_player == 'W' else 'W'
+                self.current_player = "B" if self.current_player == "W" else "W"
                 self.status_var.set(f"Joueur : {'Blanc (W)' if self.current_player == 'W' else 'Noir (B)'}")
                 self._update_turn_dot()
                 self.instruction_var.set("Astuce : Cliquez sur une pile pour commencer. Sélectionnez le nombre puis cliquez sur une case verte.")
@@ -693,12 +735,10 @@ class PogoGUI:
                 if winner:
                     self._flash_winner(winner)
                     return
-
-                if self.mode == 'ia' and self.ai and self.current_player == self.ai.player_color and not getattr(self, '_closing', False):
-                    self.master.after(350, self._do_ai_move)
+                self.master.after(250, self._maybe_ai_turn)
                 return
 
-            for i, (item, piece_color) in enumerate(moving_items):
+            for i, item in enumerate(moving_items):
                 tx, ty = target_positions[i]
                 coords = self.canvas.coords(item)
                 if not coords or len(coords) < 4:
@@ -709,39 +749,59 @@ class PogoGUI:
                 ny = sy + (ty - sy) * ease
                 x0, y0, x1, y1 = nx - radius_for_anim, ny - radius_for_anim, nx + radius_for_anim, ny + radius_for_anim
                 self.canvas.coords(item, x0, y0, x1, y1)
-            self.master.after(16, lambda f=frame+1: step(f))
+            self.master.after(16, lambda f=frame + 1: step(f))
 
         step()
 
     def _flash_winner(self, winner):
-        original = self.canvas['bg']
+        original = self.canvas["bg"]
+
         def flash(n=0):
             if n >= 6:
                 self.canvas.config(bg=original)
                 messagebox.showinfo("Fin de partie", f"BRAVO ! Le joueur {winner} a gagné la partie !")
                 return
-            self.canvas.config(bg='#ffe08a' if n % 2 == 0 else original)
-            self.master.after(180, lambda: flash(n+1))
+            self.canvas.config(bg="#ffe08a" if n % 2 == 0 else original)
+            self.master.after(180, lambda: flash(n + 1))
+
         flash()
 
-    def _do_ai_move(self):
-        if not self.ai or self.animating or getattr(self, '_closing', False):
+    def _maybe_ai_turn(self):
+        if self.animating or getattr(self, "_closing", False):
             return
-        # l'ia choisit un coup
-        move = self.ai.get_best_move(self.board)
+        winner = self.board.is_game_over()
+        if winner:
+            return
+        if self.mode == "ai_vs_ai":
+            self._do_ai_move()
+            return
+        if self.mode == "h_vs_ai":
+            if self.current_player != self.human_color:
+                self._do_ai_move()
+
+    def _do_ai_move(self):
+        if self.animating or getattr(self, "_closing", False):
+            return
+
+        ai = self.ai_white if self.current_player == "W" else self.ai_black
+        if ai is None:
+            return
+
+        move = ai.get_best_move(self.board)
+
         if not move:
-            # l'ia passe
-            if getattr(self, '_closing', False):
-                return
             self.instruction_var.set("IA ne peut jouer. Tour passé.")
-            self.current_player = 'B' if self.current_player == 'W' else 'W'
+            self.current_player = "B" if self.current_player == "W" else "W"
             self.status_var.set(f"Joueur : {'Blanc (W)' if self.current_player == 'W' else 'Noir (B)'}")
             self._update_turn_dot()
+            self.draw_board()
+            if self.mode == "ai_vs_ai":
+                self.master.after(250, self._maybe_ai_turn)
             return
+
         start, n, dest = move
         self.history.append(self.board.clone())
         self._update_undo_state()
-        self.instruction_var.set(f"IA joue : {n} pièce(s) de {start} vers {dest}...")
+        self.instruction_var.set(f"IA ({self.current_player}) joue : {n} pièce(s) de {start} vers {dest}...")
         self.animating = True
         self._animate_move(start, n, dest)
-
